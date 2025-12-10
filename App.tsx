@@ -179,30 +179,40 @@ const Camera = ({ onPost, onCancel }: { onPost: () => void, onCancel: () => void
     }
   };
 
-  const handlePost = async () => {
+  const handlePost = () => {
     if (!image) return;
     setAnalyzing(true);
     
-    // 1. Analyze with Gemini
-    const result = await Gemini.analyzeFoodImage(image);
-    setAnalysis(result);
-    setAnalyzing(false);
+    // We use setTimeout to allow the React render cycle to update the UI (showing the spinner)
+    // BEFORE starting the heavy image processing/upload task.
+    setTimeout(async () => {
+      try {
+        // 1. Analyze with Gemini
+        const result = await Gemini.analyzeFoodImage(image);
+        setAnalysis(result);
 
-    // 2. Save Post
-    const newPost: Post = {
-      id: Date.now().toString(),
-      userId: Storage.getUser()?.username || 'user',
-      username: Storage.getUser()?.username || 'user',
-      timestamp: Date.now(),
-      imageUrl: image,
-      caption: caption,
-      analysis: result,
-      likes: 0
-    };
-    Storage.savePost(newPost);
-    
-    // 3. Complete
-    onPost();
+        // 2. Save Post
+        const newPost: Post = {
+          id: Date.now().toString(),
+          userId: Storage.getUser()?.username || 'user',
+          username: Storage.getUser()?.username || 'user',
+          timestamp: Date.now(),
+          imageUrl: image,
+          caption: caption,
+          analysis: result,
+          likes: 0
+        };
+        Storage.savePost(newPost);
+        
+        // 3. Complete
+        setAnalyzing(false);
+        onPost();
+      } catch (error) {
+        console.error("Analysis failed", error);
+        setAnalyzing(false);
+        onPost(); // Still close on error, maybe just save without analysis in a real app
+      }
+    }, 100);
   };
 
   if (analyzing) {

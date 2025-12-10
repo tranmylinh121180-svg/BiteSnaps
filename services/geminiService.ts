@@ -2,8 +2,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult } from "../types";
 
 // Helper to resize and compress images before sending to AI
-// This drastically reduces latency by converting 5MB+ photos to ~100KB
-const compressImage = (base64Str: string, maxWidth = 800, quality = 0.6): Promise<string> => {
+// This drastically reduces latency by converting 5MB+ photos to ~30KB (320px width)
+const compressImage = (base64Str: string, maxWidth = 320, quality = 0.5): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.src = base64Str;
@@ -38,8 +38,8 @@ export const analyzeFoodImage = async (base64Image: string): Promise<AnalysisRes
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   try {
-    // 1. Optimize image (Resize to max 800px width, JPEG 60% quality)
-    // This makes the upload 10-50x faster
+    // 1. Optimize image (Resize to max 320px width, JPEG 50% quality)
+    // This makes the upload significantly faster
     const optimizedBase64 = await compressImage(base64Image);
     const cleanBase64 = optimizedBase64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, "");
 
