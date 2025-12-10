@@ -1,0 +1,7 @@
+{
+  "name": "BiteSnaps",
+  "description": "A mindful eating companion that uses AI to help you understand your food rhythms without the pressure of calorie counting.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
